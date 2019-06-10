@@ -1,0 +1,6 @@
+com/assignment/springboot/mongo/service/Employeeservice.class
+com/assignment/springboot/mongo/model/Employee.class
+com/assignment/springboot/mongo/dao/Employeedao.class
+com/assignment/springboot/mongo/controller/Employeecontroller.class
+com/assignment/springboot/mongo/service/Employeeservimpl.class
+com/assignment/springboot/mongo/Myapplication.class
