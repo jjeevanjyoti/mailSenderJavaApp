@@ -4,7 +4,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
- 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.*;  
 import javax.mail.*;  
 import javax.mail.internet.*;  
@@ -34,57 +35,59 @@ public class Employeecontroller  {
  
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
  
-   
+    ExecutorService executor= Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
     
     
     @PostMapping(value= "/sendmaildata")
     public String create(@RequestBody String[] data) {	
 		List<String> emails = Arrays.asList(data);
-		
-
-		final String username = "jjeevanjyoti@gmail.com";
-        final String password = "cxwihnvtskirudcx";
-        Properties prop = new Properties();
-		prop.put("mail.smtp.host", "smtp.gmail.com");
-        prop.put("mail.smtp.port", "587");
-        prop.put("mail.smtp.auth", "true");
-        prop.put("mail.smtp.starttls.enable", "true"); //TLS
-        Session session = Session.getInstance(prop,
-                new javax.mail.Authenticator() {
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(username, password);
-                    }
-                });
-
-        try {
-        	Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress("jjeevanjyoti@gmail.com"));
-            
-            
-            
+		int count=0;
+		int lengthcount=emails.size();
         	for (String element: emails) {
-        		
-                message.setRecipients(
-                        Message.RecipientType.TO,
-                        InternetAddress.parse(element)
-                );
-                message.setSubject("Testing Gmail TLS");
-                message.setText("Dear Stranger,"
-                        + "\n\n Please do not spam my email!");
-
-                Transport.send(message);
-
-                System.out.println("Done");
-                
-        	
+                executor.execute(new MyRunnable(element));
+                count++;
         	}
-            
-
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
+        	
         return "email sent successfully";
     }
- 
-    
+}
+
+class MyRunnable implements Runnable{
+    String email;
+    public MyRunnable(String element){
+        this.email = element;
+    }
+    public void run(){
+        try{
+        	final String username = "jjeevanjyoti@gmail.com";
+            final String password = "cxwihnvtskirudcx";
+            Properties prop = new Properties();
+    		prop.put("mail.smtp.host", "smtp.gmail.com");
+            prop.put("mail.smtp.port", "587");
+            prop.put("mail.smtp.auth", "true");
+            prop.put("mail.smtp.starttls.enable", "true"); //TLS
+            Session session = Session.getInstance(prop,
+                    new javax.mail.Authenticator() {
+                        protected PasswordAuthentication getPasswordAuthentication() {
+                            return new PasswordAuthentication(username, password);
+                        }
+                    });
+        	Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress("jjeevanjyoti@gmail.com"));
+            message.setRecipients(
+                    Message.RecipientType.TO,
+                    InternetAddress.parse(this.email)
+            );
+            message.setSubject("Testing Gmail TLS");
+            message.setText("Dear Stranger,"
+                    + "\n\n Please do not spam my email!");
+
+            Transport.send(message);
+
+            System.out.println("Done");
+        }catch(Exception err){
+            err.printStackTrace();
+        }
+    }
 }
